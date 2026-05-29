@@ -78,11 +78,14 @@ export default function Home() {
     }
   };
 
-  const shuffled = (len: number) =>
-    Array.from({ length: len }, (_, i) => i).sort(() => Math.random() - 0.5);
-
   const startQuiz = () => {
-    setQuizOrder(shuffled(cat.sentences.length));
+    const total = cat.sentences.length;
+    const min = Math.max(3, Math.floor(total * 0.4));
+    const count = min + Math.floor(Math.random() * (total - min + 1));
+    const order = Array.from({ length: total }, (_, i) => i)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, count);
+    setQuizOrder(order);
     setQuizMode(true);
     setQuizIndex(0);
     setQuizRevealed(false);
