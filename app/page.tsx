@@ -10,6 +10,7 @@ export default function Home() {
   const [quizMode, setQuizMode] = useState(false);
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizRevealed, setQuizRevealed] = useState(false);
+  const [quizOrder, setQuizOrder] = useState<number[]>([]);
   const [userAnswer, setUserAnswer] = useState("");
   const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [score, setScore] = useState({ got: 0, total: 0 });
@@ -36,7 +37,7 @@ export default function Home() {
     });
   };
 
-  const quizSentences = cat.sentences;
+  const quizSentences = quizOrder.map((i) => cat.sentences[i]);
   const current = quizSentences[quizIndex];
 
   const normalize = (s: string) =>
@@ -77,7 +78,11 @@ export default function Home() {
     }
   };
 
+  const shuffled = (len: number) =>
+    Array.from({ length: len }, (_, i) => i).sort(() => Math.random() - 0.5);
+
   const startQuiz = () => {
+    setQuizOrder(shuffled(cat.sentences.length));
     setQuizMode(true);
     setQuizIndex(0);
     setQuizRevealed(false);
@@ -96,6 +101,7 @@ export default function Home() {
     setRevealed(new Set());
     setQuizIndex(0);
     setQuizRevealed(false);
+    setQuizOrder([]);
     setUserAnswer("");
     setQuizResult(null);
   };
