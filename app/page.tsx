@@ -258,14 +258,23 @@ export default function Home() {
                     paddingTop: "1.5rem",
                     borderTop: "1px solid var(--border)",
                   }}>
-                    <p style={{
-                      fontSize: "0.72rem",
-                      color: quizResult === "correct" ? "var(--accent)" : "#e74c3c",
-                      marginBottom: "6px",
-                      fontWeight: 600,
-                    }}>
-                      {quizResult === "correct" ? "correto!" : "quase — a resposta era:"}
-                    </p>
+                    {quizResult === "correct" ? (
+                      <p style={{ fontSize: "0.72rem", color: "var(--accent)", fontWeight: 600, marginBottom: "6px" }}>
+                        correto!
+                      </p>
+                    ) : (
+                      <>
+                        <p style={{ fontSize: "0.72rem", color: "#e74c3c", fontWeight: 600, marginBottom: "6px" }}>
+                          você escreveu:
+                        </p>
+                        <p style={{ fontSize: "0.95rem", color: "#e74c3c", marginBottom: "12px", textDecoration: "line-through", opacity: 0.8 }}>
+                          {userAnswer}
+                        </p>
+                        <p style={{ fontSize: "0.72rem", color: "var(--accent2)", fontWeight: 600, marginBottom: "6px" }}>
+                          resposta correta:
+                        </p>
+                      </>
+                    )}
                     <p style={{ fontSize: "1rem", color: "var(--accent)", fontWeight: 500 }}>{current[0]}</p>
                   </div>
                 )}
