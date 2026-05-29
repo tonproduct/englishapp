@@ -10,6 +10,8 @@ export default function Home() {
   const [quizMode, setQuizMode] = useState(false);
   const [quizIndex, setQuizIndex] = useState(0);
   const [quizRevealed, setQuizRevealed] = useState(false);
+  const [userAnswer, setUserAnswer] = useState("");
+  const [quizResult, setQuizResult] = useState<"correct" | "wrong" | null>(null);
   const [score, setScore] = useState({ got: 0, total: 0 });
 
   const cat = categories.find((c) => c.id === active)!;
@@ -37,6 +39,29 @@ export default function Home() {
   const quizSentences = cat.sentences;
   const current = quizSentences[quizIndex];
 
+  const normalize = (s: string) =>
+    s.trim().toLowerCase().replace(/[.,!?]+$/, "").replace(/\s+/g, " ");
+
+  const submitAnswer = () => {
+    if (!userAnswer.trim()) return;
+    const correct = normalize(userAnswer) === normalize(current[0]);
+    setQuizResult(correct ? "correct" : "wrong");
+    setQuizRevealed(true);
+    setScore((s) => ({ got: s.got + (correct ? 1 : 0), total: s.total + 1 }));
+  };
+
+  const nextQuestion = () => {
+    if (quizIndex < quizSentences.length - 1) {
+      setQuizIndex((i) => i + 1);
+    } else {
+      setQuizMode(false);
+      setQuizIndex(0);
+    }
+    setQuizRevealed(false);
+    setUserAnswer("");
+    setQuizResult(null);
+  };
+
   const handleQuizAnswer = (correct: boolean) => {
     setScore((s) => ({
       got: s.got + (correct ? 1 : 0),
@@ -56,6 +81,8 @@ export default function Home() {
     setQuizMode(true);
     setQuizIndex(0);
     setQuizRevealed(false);
+    setUserAnswer("");
+    setQuizResult(null);
   };
 
   const exitQuiz = () => {
@@ -69,6 +96,8 @@ export default function Home() {
     setRevealed(new Set());
     setQuizIndex(0);
     setQuizRevealed(false);
+    setUserAnswer("");
+    setQuizResult(null);
   };
 
   return (
@@ -217,51 +246,79 @@ export default function Home() {
                 }}>{current[1]}</p>
 
                 {quizRevealed && (
-                  <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border)" }}>
-                    <p style={{ fontSize: "0.72rem", color: "var(--accent2)", marginBottom: "6px" }}>resposta:</p>
+                  <div style={{
+                    marginTop: "1.5rem",
+                    paddingTop: "1.5rem",
+                    borderTop: "1px solid var(--border)",
+                  }}>
+                    <p style={{
+                      fontSize: "0.72rem",
+                      color: quizResult === "correct" ? "var(--accent)" : "#e74c3c",
+                      marginBottom: "6px",
+                      fontWeight: 600,
+                    }}>
+                      {quizResult === "correct" ? "correto!" : "quase — a resposta era:"}
+                    </p>
                     <p style={{ fontSize: "1rem", color: "var(--accent)", fontWeight: 500 }}>{current[0]}</p>
                   </div>
                 )}
               </div>
 
               {!quizRevealed ? (
-                <button onClick={() => setQuizRevealed(true)} style={{
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="escreva a tradução em inglês..."
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && submitAnswer()}
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "8px",
+                      padding: "12px 14px",
+                      color: "var(--text)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "0.85rem",
+                      outline: "none",
+                      width: "100%",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <button
+                    onClick={submitAnswer}
+                    disabled={!userAnswer.trim()}
+                    style={{
+                      width: "100%",
+                      background: userAnswer.trim() ? "var(--accent)" : "var(--surface2)",
+                      color: userAnswer.trim() ? "#000" : "var(--muted)",
+                      border: "none",
+                      borderRadius: "8px",
+                      padding: "12px",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "0.85rem",
+                      fontWeight: 500,
+                      cursor: userAnswer.trim() ? "pointer" : "not-allowed",
+                    }}
+                  >
+                    verificar
+                  </button>
+                </div>
+              ) : (
+                <button onClick={nextQuestion} style={{
                   width: "100%",
-                  background: "var(--accent)",
-                  color: "#000",
-                  border: "none",
+                  background: "transparent",
+                  border: "1px solid var(--accent)",
+                  color: "var(--accent)",
                   borderRadius: "8px",
                   padding: "12px",
                   fontFamily: "var(--font-mono)",
                   fontSize: "0.85rem",
-                  fontWeight: 500,
                   cursor: "pointer",
-                }}>ver resposta</button>
-              ) : (
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button onClick={() => handleQuizAnswer(false)} style={{
-                    flex: 1,
-                    background: "transparent",
-                    border: "1px solid #e74c3c55",
-                    color: "#e74c3c",
-                    borderRadius: "8px",
-                    padding: "10px",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "0.8rem",
-                    cursor: "pointer",
-                  }}>errei</button>
-                  <button onClick={() => handleQuizAnswer(true)} style={{
-                    flex: 1,
-                    background: "transparent",
-                    border: "1px solid var(--accent)",
-                    color: "var(--accent)",
-                    borderRadius: "8px",
-                    padding: "10px",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "0.8rem",
-                    cursor: "pointer",
-                  }}>acertei</button>
-                </div>
+                }}>
+                  {quizIndex < quizSentences.length - 1 ? "próxima →" : "ver resultado →"}
+                </button>
               )}
             </div>
           ) : (
